@@ -167,3 +167,29 @@ export const logout = async (req: Request, res: Response) => {
     return response(res, 500, "Internal Server Error, please try again.");
   }
 };
+
+export const checkUserAuth = async (req: Request, res: Response) => {
+  try {
+    const userId = req?.id;
+    if (!userId) {
+      return response(
+        res,
+        400,
+        "Unauthenticated, please login to access our data.",
+      );
+    }
+
+    const user = await User.findById(userId).select(
+      "-password -verificationToken -resetPasswordToken -resetPasswordExpires",
+    );
+
+    if (!user) {
+      return response(res, 403, "User not found.");
+    }
+
+    return response(res, 201, "User retrieved successfully.", user);
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
