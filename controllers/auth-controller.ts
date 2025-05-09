@@ -154,3 +154,16 @@ export const resetPassword = async (req: Request, res: Response) => {
     return response(res, 500, "Internal Server Error, please try again.");
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("access_token", {
+      httpOnly: true,
+    });
+
+    return response(res, 200, "You have logged out.");
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
