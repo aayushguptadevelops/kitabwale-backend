@@ -59,3 +59,34 @@ export const verifyEmail = async (req: Request, res: Response) => {
     return response(res, 500, "Internal Server Error, please try again.");
   }
 };
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      return response(res, 400, "Invalid email or password.");
+    }
+
+    if (!user.isVerified) {
+      return response(
+        res,
+        400,
+        "Please verify your email before logging in. Check your inbox for a verification link to complete the process.",
+      );
+    }
+
+    const accessToken = generateToken(user);
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return response(res, 200, "User logged in successfully.", {
+      user: { name: user.name, email: user.email },
+    });
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
