@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import User from "../models/user";
 import { response } from "../utils/response-handler";
 import crypto from "crypto";
-import { sendVerificationEmail } from "../config/email-config";
+import {
+  sendResetPasswordLinkToEmail,
+  sendVerificationEmail,
+} from "../config/email-config";
 import { generateToken } from "../utils/generate-token";
 
 export const register = async (req: Request, res: Response) => {
@@ -54,6 +57,12 @@ export const verifyEmail = async (req: Request, res: Response) => {
     });
 
     await user.save();
+
+    return response(
+      res,
+      200,
+      "Email verified successfully. You can now use our services.",
+    );
   } catch (e) {
     console.error(e);
     return response(res, 500, "Internal Server Error, please try again.");
@@ -85,6 +94,61 @@ export const login = async (req: Request, res: Response) => {
     return response(res, 200, "User logged in successfully.", {
       user: { name: user.name, email: user.email },
     });
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return response(res, 400, "No account found with this email address.");
+    }
+
+    const resetPasswordToken = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = resetPasswordToken;
+    user.resetPasswordExpires = new Date(Date.now() + 3600000);
+    await user.save();
+
+    await sendResetPasswordLinkToEmail(user.email, resetPasswordToken);
+
+    return response(
+      res,
+      200,
+      "A password reset link has been sent to your email address.",
+    );
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const token = req.params;
+    const { newPassword } = req.body;
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) {
+      return response(res, 400, "Invalid or expired reset password token.");
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    return response(
+      res,
+      200,
+      "Your password has been reset successfully. You can now login with your new password",
+    );
   } catch (e) {
     console.error(e);
     return response(res, 500, "Internal Server Error, please try again.");
