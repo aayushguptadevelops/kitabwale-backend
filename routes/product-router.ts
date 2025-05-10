@@ -12,5 +12,6 @@ router.post(
   productController.createProduct,
 );
 router.get("/", authenticatedUser, productController.getAllProducts);
+router.get("/:id", authenticatedUser, productController.getProductById);
 
 export default router;

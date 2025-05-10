@@ -94,3 +94,25 @@ export const getAllProducts = async (req: Request, res: Response) => {
     return response(res, 500, "Internal Server Error, please try again.");
   }
 };
+
+export const getProductById = async (req: Request, res: Response) => {
+  try {
+    const product = await Products.findById(req.params.id).populate({
+      path: "seller",
+      select: "name email profilePicture phoneNumber addresses",
+      populate: {
+        path: "addresses",
+        model: "Address",
+      },
+    });
+
+    if (!product) {
+      return response(res, 404, "Product not found for this id.");
+    }
+
+    return response(res, 200, "Product fetched successfully.", product);
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
