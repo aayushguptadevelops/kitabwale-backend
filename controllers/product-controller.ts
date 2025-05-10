@@ -116,3 +116,49 @@ export const getProductById = async (req: Request, res: Response) => {
     return response(res, 500, "Internal Server Error, please try again.");
   }
 };
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await Products.findByIdAndDelete(req.params.productId);
+
+    if (!product) {
+      return response(res, 404, "Product not found for this id.");
+    }
+
+    return response(res, 200, "Products deleted successfully.");
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
+
+export const getProductBySellerId = async (req: Request, res: Response) => {
+  try {
+    const sellerId = req.params.sellerId;
+    if (!sellerId) {
+      return response(
+        res,
+        400,
+        "Seller not found, please provide a valid sellerId.",
+      );
+    }
+
+    const product = await Products.find({ seller: sellerId })
+      .sort({ createdAt: -1 })
+      .populate("seller", "name email profilePicture phoneNumber addresses");
+
+    if (!product) {
+      return response(res, 404, "Product not found for this seller.");
+    }
+
+    return response(
+      res,
+      200,
+      "Product fetched by sellerId successfully.",
+      product,
+    );
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
