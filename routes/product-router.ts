@@ -11,5 +11,6 @@ router.post(
   multerMiddleware,
   productController.createProduct,
 );
+router.get("/", authenticatedUser, productController.getAllProducts);
 
 export default router;

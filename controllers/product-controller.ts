@@ -81,3 +81,16 @@ export const createProduct = async (req: Request, res: Response) => {
     return response(res, 500, "Internal Server Error, please try again.");
   }
 };
+
+export const getAllProducts = async (req: Request, res: Response) => {
+  try {
+    const products = await Products.find()
+      .sort({ createdAt: -1 })
+      .populate("seller", "name email");
+
+    return response(res, 200, "Products fetched successfully.", products);
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
