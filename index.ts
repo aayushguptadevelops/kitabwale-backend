@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import connectDb from "./config/db-connect";
 import authRoutes from "./routes/auth-router";
 import productRoutes from "./routes/product-router";
+import cartRoutes from "./routes/cart-router";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ connectDb();
 // Api Endpoints
 app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}...`);
