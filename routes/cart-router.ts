@@ -1,16 +1,10 @@
 import { Router } from "express";
 import * as cartController from "../controllers/cart-controller";
 import { authenticatedUser } from "../middleware/auth-middleware";
-import { multerMiddleware } from "../config/cloudinary-config";
 
 const router = Router();
 
-router.post(
-  "/add",
-  authenticatedUser,
-  multerMiddleware,
-  cartController.addToCart,
-);
+router.post("/add", authenticatedUser, cartController.addToCart);
 router.delete(
   "/remove/:productId",
   authenticatedUser,
