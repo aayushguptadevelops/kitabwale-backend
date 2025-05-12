@@ -2,6 +2,16 @@ import { Request, Response } from "express";
 import { response } from "../utils/response-handler";
 import CartItems from "../models/cart-items";
 import Order from "../models/order";
+import Razorpay from "razorpay";
+import dotenv from "dotenv";
+import crypto from "crypto";
+
+dotenv.config();
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY as string,
+  key_secret: process.env.RAZORPAY_KEY_SECRET as string,
+});
 
 export const createOrUpdateOrder = async (req: Request, res: Response) => {
   try {
@@ -96,6 +106,70 @@ export const getOrderById = async (req: Request, res: Response) => {
     }
 
     return response(res, 200, "Order fetched by Id successfully.", order);
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
+
+export const createPaymentWithRazorpay = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { orderId } = req.body;
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return response(res, 404, "Order not found.");
+    }
+
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(order.totalAmount * 100),
+      currency: "INR",
+      receipt: order?._id.toString(),
+    });
+
+    return response(
+      res,
+      200,
+      "Razorpay order and payment created successfully.",
+      { order: razorpayOrder },
+    );
+  } catch (e) {
+    console.error(e);
+    return response(res, 500, "Internal Server Error, please try again.");
+  }
+};
+
+export const handleRazorpayWebhook = async (req: Request, res: Response) => {
+  try {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET as string;
+    const shasum = crypto.createHmac("sha256", secret);
+
+    shasum.update(JSON.stringify(req.body));
+
+    const digest = shasum.digest("hex");
+
+    if (digest === req.headers["x-razorpay-signature"]) {
+      const paymentId = req.body.payload.payment.entity.id;
+      const orderId = req.body.payload.payment.entity.order.id;
+
+      await Order.findOneAndUpdate(
+        {
+          "paymentDetails.razorpay_order_id": orderId,
+        },
+        {
+          paymentStatus: "complete",
+          status: "processing",
+          "paymentDetails.razorpay_payment_id": paymentId,
+        },
+      );
+
+      return response(res, 200, "Webhook processed successfully.");
+    } else {
+      return response(res, 400, "Invalid signature.");
+    }
   } catch (e) {
     console.error(e);
     return response(res, 500, "Internal Server Error, please try again.");
