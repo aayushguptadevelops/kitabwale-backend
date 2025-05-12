@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth-router";
 import productRoutes from "./routes/product-router";
 import cartRoutes from "./routes/cart-router";
 import wishListRoutes from "./routes/wishlist-router";
+import addressRoutes from "./routes/address-router";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishListRoutes);
+app.use("/api/user/address", addressRoutes);
 
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}...`);
