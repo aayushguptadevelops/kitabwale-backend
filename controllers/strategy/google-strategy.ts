@@ -22,7 +22,6 @@ passport.use(
       done: (error: any, user?: IUser | false) => void,
     ) => {
       const { emails, displayName, photos } = profile;
-      console.log("This is my profile", profile);
       try {
         let user = await User.findOne({ email: emails?.[0]?.value });
         if (user) {
@@ -38,7 +37,7 @@ passport.use(
           name: displayName,
           emails: emails?.[0]?.value,
           profilePicture: photos?.[0]?.value,
-          isVerified: true,
+          isVerified: emails?.[0]?.verified,
           agreeTerms: true,
         });
 
@@ -49,3 +48,5 @@ passport.use(
     },
   ),
 );
+
+export default passport;
