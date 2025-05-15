@@ -41,7 +41,7 @@ export const register = async (req: Request, res: Response) => {
 
 export const verifyEmail = async (req: Request, res: Response) => {
   try {
-    const token = req.params;
+    const { token } = req.params;
     const user = await User.findOne({ verificationToken: token });
     if (!user) {
       return response(res, 400, "Invalid or expired verification token.");
@@ -128,7 +128,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
 export const resetPassword = async (req: Request, res: Response) => {
   try {
-    const token = req.params;
+    const { token } = req.params;
     const { newPassword } = req.body;
     const user = await User.findOne({
       resetPasswordToken: token,

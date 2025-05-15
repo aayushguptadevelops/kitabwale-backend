@@ -32,7 +32,7 @@ const orderSchema = new Schema<IOrder>(
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     items: [orderItemsSchema],
     totalAmount: { type: Number },
-    shippingAddress: [{ type: Schema.Types.ObjectId, ref: "Address" }],
+    shippingAddress: { type: Schema.Types.ObjectId, ref: "Address" },
     paymentStatus: {
       type: String,
       enum: ["pending", "complete", "failed"],
