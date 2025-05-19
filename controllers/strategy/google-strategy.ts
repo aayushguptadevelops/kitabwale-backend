@@ -35,7 +35,7 @@ passport.use(
         user = await User.create({
           googleId: profile.id,
           name: displayName,
-          emails: emails?.[0]?.value,
+          email: emails?.[0]?.value,
           profilePicture: photos?.[0]?.value,
           isVerified: emails?.[0]?.verified,
           agreeTerms: true,
