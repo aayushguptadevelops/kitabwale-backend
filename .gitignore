@@ -13,3 +13,6 @@
 
 # Uploads
 /uploads/
+
+# Build output
+/dist
